@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Release Calendar — AI 产品发布日历</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0e1a; --bg-card: #111827; --bg-hover: #1a2332; --border: #1e293b;
+      --text: #e2e8f0; --text-muted: #94a3b8; --text-dim: #64748b;
+      --green: #10b981; --green-glow: rgba(16,185,129,0.15);
+      --amber: #f59e0b; --amber-glow: rgba(245,158,11,0.15); --purple: #8b5cf6;
+      --cyan: #06b6d4; --pink: #ec4899;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    header { border-bottom: 1px solid var(--border); background: rgba(10,14,26,0.9); backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 100; }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; gap: 16px; flex-wrap: wrap; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--purple), var(--pink)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text h1 { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .logo-text p { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+    .stats-bar { display: flex; gap: 24px; }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 20px; font-weight: 700; color: var(--purple); }
+    .stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .hero { padding: 40px 0; text-align: center; border-bottom: 1px solid var(--border); }
+    .hero-title { font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--text), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+    .hero-desc { font-size: 16px; color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; }
+    .countdown-bar { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .countdown-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; text-align: center; min-width: 100px; }
+    .countdown-value { font-size: 28px; font-weight: 700; color: var(--purple); }
+    .countdown-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+    .countdown-event { font-size: 13px; color: var(--text-muted); margin-top: 8px; max-width: 200px; }
+
+    .controls { display: flex; gap: 16px; padding: 24px 0; align-items: center; flex-wrap: wrap; }
+    .search-box { flex: 1; min-width: 280px; position: relative; }
+    .search-box input { width: 100%; padding: 12px 16px 12px 44px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-card); color: var(--text); font-size: 14px; }
+    .search-box input:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+    .search-box::before { content: "🔍"; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 14px; }
+    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .filter-btn:hover { border-color: var(--purple); color: var(--text); }
+    .filter-btn.active { background: var(--purple); color: white; border-color: var(--purple); }
+    .view-toggle { display: flex; gap: 4px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .view-btn { padding: 8px 14px; background: var(--bg-card); color: var(--text-muted); border: none; cursor: pointer; font-size: 13px; }
+    .view-btn.active { background: var(--purple); color: white; }
+
+    .main { display: grid; grid-template-columns: 220px 1fr; gap: 24px; padding-bottom: 40px; }
+    @media(max-width:768px){ .main{grid-template-columns:1fr;} .sidebar{display:none;} }
+    .sidebar h3 { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .company-list, .category-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 24px; }
+    .company-item, .category-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-size: 13px; }
+    .company-item:hover, .category-item:hover { background: var(--bg-hover); }
+    .company-item.active, .category-item.active { background: rgba(139,92,246,0.15); color: var(--purple); }
+    .company-count, .category-count { font-size: 11px; color: var(--text-dim); background: var(--bg); padding: 2px 8px; border-radius: 10px; }
+    .company-item.active .company-count, .category-item.active .category-count { background: var(--purple); color: white; }
+
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .calendar-header-cell { background: var(--bg-hover); padding: 12px 8px; text-align: center; font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; }
+    .calendar-cell { background: var(--bg-card); min-height: 100px; padding: 8px; position: relative; cursor: pointer; transition: all 0.2s; }
+    .calendar-cell:hover { background: var(--bg-hover); }
+    .calendar-cell.other-month { background: rgba(17,24,39,0.5); }
+    .calendar-cell .day-number { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .calendar-cell.other-month .day-number { color: var(--text-dim); }
+    .calendar-cell .day-events { display: flex; flex-direction: column; gap: 2px; }
+    .day-event-label { font-size: 10px; padding: 2px 6px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; margin-bottom: 2px; }
+
+    .timeline { position: relative; }
+    .timeline::before { content: ""; position: absolute; left: 16px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+    .entry { position: relative; padding-left: 44px; margin-bottom: 16px; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .entry-dot { position: absolute; left: 10px; top: 20px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--bg); z-index: 2; }
+    .entry-dot.released { background: var(--green); } .entry-dot.upcoming { background: var(--purple); }
+    .entry-dot.expected { background: var(--amber); } .entry-dot.event { background: var(--cyan); }
+    .entry-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.2s; cursor: pointer; }
+    .entry-card:hover { border-color: var(--purple); transform: translateX(4px); }
+    .entry-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; gap: 12px; }
+    .entry-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .entry-product { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .product-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; background: var(--bg-hover); }
+    .entry-status { font-size: 11px; padding: 2px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .status-released { background: var(--green-glow); color: var(--green); } .status-upcoming { background: rgba(139,92,246,0.15); color: var(--purple); }
+    .status-expected { background: var(--amber-glow); color: var(--amber); } .status-event { background: rgba(6,182,212,0.15); color: var(--cyan); }
+    .entry-date { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+    .entry-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+    .entry-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+    .entry-tags { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+    .entry-tag { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: var(--bg-hover); color: var(--text-dim); }
+
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .card-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: all 0.2s; cursor: pointer; }
+    .card-item:hover { border-color: var(--purple); transform: translateY(-2px); }
+    .month-nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; }
+    .month-nav h2 { font-size: 20px; font-weight: 600; }
+    .month-nav-btn { padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-card); color: var(--text); cursor: pointer; }
+    .month-nav-btn:hover { border-color: var(--purple); background: var(--bg-hover); }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; max-width: 560px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 32px; transform: translateY(20px); transition: transform 0.3s; }
+    .modal-overlay.show .modal { transform: translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .modal-title { font-size: 20px; font-weight: 700; }
+    .modal-meta { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .modal-detail-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .modal-detail-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--text-muted); }
+    .modal-detail-list li::before { content: "•"; color: var(--purple); font-weight: bold; }
+    .modal-countdown { display: flex; gap: 12px; margin-top: 16px; padding: 16px; background: var(--bg); border-radius: 10px; justify-content: center; }
+    .modal-countdown-item { text-align: center; }
+    .modal-countdown-value { font-size: 24px; font-weight: 700; color: var(--purple); }
+    .modal-countdown-label { font-size: 11px; color: var(--text-dim); }
+    .no-results { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+    .no-results h3 { font-size: 18px; margin-bottom: 8px; color: var(--text-muted); }
+    footer { border-top: 1px solid var(--border); padding: 24px 0; text-align: center; color: var(--text-dim); font-size: 12px; }
+    footer a { color: var(--purple); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <header><div class="container"><div class="header-inner">
+    <div class="logo"><div class="logo-icon">📅</div><div class="logo-text"><h1>AI Release Calendar</h1><p>AI 产品发布日历 · 追踪全网最新发布</p></div></div>
+    <div class="stats-bar"><div class="stat-item"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total</div></div><div class="stat-item"><div class="stat-value" id="stat-upcoming">0</div><div class="stat-label">Upcoming</div></div><div class="stat-item"><div class="stat-value" id="stat-released">0</div><div class="stat-label">Released</div></div></div>
+  </div></div></header>
+
+  <div class="hero"><div class="container">
+    <h2 class="hero-title">下一场 AI 发布倒计时</h2>
+    <p class="hero-desc">世界人工智能大会 WAIC 2026 即将开幕，300+ AI 产品全球首发</p>
+    <div class="countdown-bar" id="countdownBar"></div>
+  </div></div>
+
+  <div class="container">
+    <div class="controls">
+      <div class="search-box"><input type="text" id="searchInput" placeholder="搜索产品、公司、事件..." /></div>
+      <div class="filter-group" id="statusFilters">
+        <button class="filter-btn active" data-status="all">全部</button>
+        <button class="filter-btn" data-status="upcoming">🚀 即将发布</button>
+        <button class="filter-btn" data-status="released">✅ 已发布</button>
+        <button class="filter-btn" data-status="expected">🔮 预期发布</button>
+        <button class="filter-btn" data-status="event">📅 大会/活动</button>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" data-view="calendar">📅 日历</button>
+        <button class="view-btn" data-view="timeline">⏱️ 时间线</button>
+        <button class="view-btn" data-view="cards">🎴 卡片</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <aside class="sidebar">
+        <h3>公司</h3><div class="company-list" id="companyList"></div>
+        <h3>类别</h3><div class="category-list" id="categoryList"></div>
+      </aside>
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+
+  <footer><div class="container"><p>AI Release Calendar · 数据截至 2026-06-20 · 由 <a href="https://github.com/seanliii">🦐 小蓝虾</a> 维护</p></div></footer>
+
+  <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modal"></div></div>
+
+  <script>
+    const releaseData = [
+      { id: 1, product: "WAIC 2026", company: "WAIC", date: "2026-07-17", endDate: "2026-07-20", status: "event", category: "大会", title: "2026 世界人工智能大会", desc: "主题为「智能伙伴，共创未来」，超 300 款 AI 产品将全球首发，涵盖大模型、Agent、机器人、芯片等全领域。", details: ["300+ AI 产品全球首发", "10 个国家部委联合主办", "50+ 场主题论坛", "AI 全球治理高级别会议", "预计 10 万+ 专业观众"], tags: ["WAIC", "大会", "AI产品", "全球首发"], color: "#8b5cf6" },
+      { id: 2, product: "Claude Fable 5", company: "Anthropic", date: "2026-06-09", status: "released", category: "大模型", title: "Claude Fable 5 正式发布", desc: "Anthropic 最新叙事 AI 产品，支持 100 万 Token 上下文，专为长文档分析和创意写作优化。", details: ["100 万 Token 上下文窗口", "叙事连贯性大幅提升", "支持多角色对话生成", "API 定价与 Claude 4 相同"], tags: ["Anthropic", "Claude", "大模型", "长上下文"], color: "#10b981" },
+      { id: 3, product: "Xcode 27 Beta", company: "Apple", date: "2026-06-11", status: "released", category: "开发工具", title: "Xcode 27 Beta 原生集成 Gemini", desc: "WWDC 26 重磅发布，Xcode 27 将原生集成 Google Gemini AI 编程助手，支持实时代码补全和 Bug 诊断。", details: ["Gemini 直接集成至 Xcode", "Swift/Objective-C/C++ 实时代码补全", "自然语言描述生成代码", "Bug 诊断对话式交互"], tags: ["Apple", "Xcode", "Gemini", "AI编程"], color: "#10b981" },
+      { id: 4, product: "GPT-5.5", company: "OpenAI", date: "2026-06-08", status: "released", category: "大模型", title: "OpenAI 发布 GPT-5.5", desc: "GPT-5.5 深度集成 Codex 代码引擎，支持 200 万 Token 上下文和实时代码执行。", details: ["200 万 Token 上下文窗口", "Codex 引擎实时执行 Python/JS", "多模态输入支持视频理解", "API 定价维持 GPT-4o 水平"], tags: ["OpenAI", "GPT", "Codex", "多模态"], color: "#10b981" },
+      { id: 5, product: "Gemini 3.5 Pro", company: "Google", date: "2026-06-03", status: "released", category: "大模型", title: "Google Gemini 3.5 Pro 发布", desc: "Gemini 3.5 Pro 在推理、数学和代码能力上全面超越前代。2.5 Flash 轻量版速度提升 3 倍，成本降低 60%。", details: ["MMLU 得分 92.1%", "2.5 Flash 速度提升 3x，成本降低 60%", "原生支持 Google Workspace 集成", "Vertex AI 企业级部署优化"], tags: ["Google", "Gemini", "Vertex AI", "Workspace"], color: "#10b981" },
+      { id: 6, product: "Build 2026", company: "Microsoft", date: "2026-06-01", endDate: "2026-06-05", status: "event", category: "大会", title: "Microsoft Build 2026", desc: "微软年度开发者大会，发布 MAI-Thinking-1 推理模型、MAI-Code-1 编程模型，以及 Copilot 生态多项更新。", details: ["MAI-Thinking-1 微软首个自研推理模型", "MAI-Code-1 HumanEval 92.3%", "Copilot Agent 工作流升级", "Azure OpenAI 服务同步更新"], tags: ["Microsoft", "Build", "MAI", "Copilot"], color: "#06b6d4" },
+      { id: 7, product: "iOS 27", company: "Apple", date: "2026-06-09", status: "released", category: "系统", title: "Apple iOS 27 系统级 Siri AI Agent", desc: "iOS 27 将 Siri 升级为系统级 AI Agent，支持跨应用任务执行、屏幕内容理解和上下文记忆。", details: ["跨应用任务执行", "屏幕内容实时理解", "上下文记忆跨会话保持", "Apple Intelligence 端侧模型优化"], tags: ["Apple", "Siri", "iOS27", "端侧AI"], color: "#10b981" },
+      { id: 8, product: "Claude 4.8", company: "Anthropic", date: "2026-06-14", status: "released", category: "大模型", title: "Claude 4.8 多 Agent 编排增强", desc: "Claude 4.8 重点提升多 Agent 协同编排能力，新增 goal 命令让 Agent 可以设定长期目标并自主分解子任务。", details: ["多 Agent 编排性能提升 40%", "goal 命令支持目标层级分解", "Claude Code Agent 视图优化", "MCP 插件市场 v2.3 同步上线"], tags: ["Anthropic", "Claude", "Multi-Agent", "MCP"], color: "#10b981" },
+      { id: 9, product: "OpenClaw v2026.6.1", company: "OpenClaw", date: "2026-06-10", status: "released", category: "平台", title: "OpenClaw v2026.6.1 发布", desc: "106 项更新，核心功能包括技能工坊（Skill Workshop），Agent 可自主生成新技能提案并提交人类审批。", details: ["技能工坊：Agent 自主生成技能提案", "106 项总更新", "智能家居赛道新增全屋智能场景", "Workboard 多智能体协同编排增强"], tags: ["OpenClaw", "Skill Workshop", "Multi-Agent", "智能家居"], color: "#10b981" },
+      { id: 10, product: "微信小程序 AI 流量主", company: "腾讯", date: "2026-06-11", status: "released", category: "平台", title: "微信小程序 AI 流量主功能上线", desc: "微信正式开放小程序 AI 流量主功能，开发者可通过接入 AI 对话服务获得广告分成。", details: ["AI 对话服务接入即可获得流量主收益", "支持 GPT/Claude/国产模型自由切换", "官方提供 AI 对话模板一键部署", "《一人公司》2026 年度最佳案例"], tags: ["微信", "小程序", "AI流量主", "变现"], color: "#10b981" },
+      { id: 11, product: "OpenClaw Windows 原生版", company: "OpenClaw", date: "2026-06-06", status: "released", category: "平台", title: "OpenClaw Windows 原生版发布", desc: "Windows 原生客户端，支持 Multi-Agent 并行编排、本地模型调用和系统级自动化。", details: ["Windows 原生 EXE 安装包", "Multi-Agent 并行编排可视化", "本地 Ollama 模型一键接入", "系统级自动化（文件/浏览器/Office）"], tags: ["OpenClaw", "Windows", "Multi-Agent", "本地模型"], color: "#10b981" },
+      { id: 12, product: "豆包专业版", company: "字节跳动", date: "2026-06-05", status: "released", category: "大模型", title: "字节豆包宣布专业版收费", desc: "豆包 AI 专业版开始收费，月费 19.9 元。基础版保留免费但限制每日对话次数。", details: ["专业版月费 19.9 元", "基础版每日 50 轮限制", "Pro 版支持 GPT-4 级模型", "企业版按需定价"], tags: ["字节", "豆包", "收费", "国产大模型"], color: "#10b981" },
+      { id: 13, product: "Anthropic IPO", company: "Anthropic", date: "2026-06-05", status: "released", category: "商业", title: "Anthropic 宣布 IPO 计划", desc: "Anthropic 正式提交 IPO 申请，目标估值 600 亿美元。若成功将成为继 OpenAI 之后第二家上市的 AI 独角兽。", details: ["IPO 申请已提交 SEC", "目标估值 600 亿美元", "2025 年营收 8.5 亿美元", "Amazon 持股 15% 不变", "预计 2026 Q3 上市"], tags: ["Anthropic", "IPO", "上市", "Claude"], color: "#10b981" },
+      { id: 14, product: "OpenClaw 智能家居", company: "OpenClaw", date: "2026-06-10", status: "released", category: "平台", title: "OpenClaw 进军智能家居赛道", desc: "OpenClaw 在 2026 广州光亚展发布全屋智能 Agent 方案，支持灯光/窗帘/空调/安防的统一语音控制和场景编排。", details: ["全屋智能 Agent 方案", "支持 200+ 品牌设备接入", "语音+手势+App 三控", "场景编排：回家/离家/睡眠模式", "光亚展现场 Demo 获最佳创新奖"], tags: ["OpenClaw", "智能家居", "全屋智能", "光亚展"], color: "#10b981" },
+      { id: 15, product: "Claude Code MCP", company: "Anthropic", date: "2026-06-13", status: "released", category: "开发工具", title: "Claude Code MCP 插件市场 v2.3", desc: "Claude Code MCP 插件市场更新至 v2.3，新增 30+ 官方插件，支持数据库、GitHub、Jira 等工具集成。", details: ["30+ 新官方插件", "GitHub PR 自动审查", "Jira 工单自动生成", "Slack/Teams 消息同步", "MCP 协议成为行业标准"], tags: ["Anthropic", "Claude Code", "MCP", "插件市场"], color: "#10b981" },
+      { id: 16, product: "DAA 概念", company: "百度", date: "2026-06-05", status: "released", category: "商业", title: "百度提出 DAA 新概念", desc: "百度 CEO 李彦宏提出 DAA（Daily Active Agents）指标，认为 Agent 日活将取代 DAU 成为 AI 时代核心指标。", details: ["DAA = Daily Active Agents 定义", "百度智能体平台日活突破 1000 万", "Agent 即服务的商业模式探索", "与 DAU 的对比分析框架"], tags: ["百度", "DAA", "李彦宏", "智能体"], color: "#10b981" },
+      { id: 17, product: "Gemini 月活", company: "Google", date: "2026-06-04", status: "released", category: "商业", title: "Google Gemini 全球月活突破 5 亿", desc: "Gemini 全球月活跃用户突破 5 亿，成为仅次于 ChatGPT 的第二大 AI 助手。Android 端预装是增长主引擎。", details: ["月活 5 亿，日活 1.2 亿", "Android 15 预装贡献 60% 增长", "Workspace 企业用户突破 1000 万", "印度/东南亚新兴市场增长最快"], tags: ["Google", "Gemini", "月活", "Android"], color: "#10b981" },
+      { id: 18, product: "AI Agent 千亿产值", company: "行业", date: "2026-06-07", status: "released", category: "商业", title: "AI Agent 企业级规模化落地，2026 预计千亿产值", desc: "据《中国 AI Agent 产业发展报告 2026》，AI Agent 企业级应用市场规模预计 2026 年突破 1000 亿元。", details: ["2026 年市场规模预计 1000 亿元", "客服 Agent 占比 35%", "编程 Agent 占比 28%", "营销 Agent 占比 20%", "金融/医疗/教育快速跟进"], tags: ["AI Agent", "企业级", "商业化", "市场规模"], color: "#10b981" },
+      { id: 19, product: "OpenClaw Workboard", company: "OpenClaw", date: "2026-06-15", status: "released", category: "平台", title: "OpenClaw Workboard 多智能体协同编排升级", desc: "Workboard 可视化多 Agent 编排工具升级，支持条件分支、循环、定时触发和跨 Agent 状态共享。", details: ["可视化流程编辑器升级", "条件分支和循环节点", "定时触发器（Cron 表达式支持）", "跨 Agent 状态共享机制"], tags: ["OpenClaw", "Workboard", "Multi-Agent", "可视化编排"], color: "#10b981" },
+      { id: 20, product: "GPT-6", company: "OpenAI", date: "2026-09-15", status: "expected", category: "大模型", title: "OpenAI GPT-6 预期发布", desc: "业内预计 GPT-6 将在 2026 年 Q3 发布，可能支持多模态原生生成和 Agent 自主执行能力。", details: ["预期 2026 年 Q3 发布", "可能支持多模态原生生成", "Agent 自主执行能力增强", "实时联网推理优化"], tags: ["OpenAI", "GPT-6", "预期发布", "多模态"], color: "#f59e0b" },
+      { id: 21, product: "Claude 5", company: "Anthropic", date: "2026-08-20", status: "expected", category: "大模型", title: "Claude 5 预期发布", desc: "Anthropic 下一代 Claude 5 预计 2026 Q3 推出，重点提升推理能力和多 Agent 协作。", details: ["预期 2026 年 Q3 发布", "推理能力大幅提升", "多 Agent 协作增强", "企业级安全合规升级"], tags: ["Anthropic", "Claude 5", "预期发布", "推理"], color: "#f59e0b" },
+      { id: 22, product: "Gemini 4", company: "Google", date: "2026-10-15", status: "expected", category: "大模型", title: "Google Gemini 4 预期发布", desc: "Google 下一代 Gemini 4 预计 2026 Q4 推出，可能引入原生 Agent 执行和多模态生成能力。", details: ["预期 2026 年 Q4 发布", "原生 Agent 执行能力", "多模态生成增强", "与 Android 系统深度集成"], tags: ["Google", "Gemini 4", "预期发布", "Agent"], color: "#f59e0b" },
+      { id: 23, product: "Meta Llama 4", company: "Meta", date: "2026-11-01", status: "expected", category: "大模型", title: "Meta Llama 4 预期发布", desc: "Meta 下一代开源大模型 Llama 4 预计 2026 年底发布，参数规模可能达到 1 万亿。", details: ["预期 2026 年底发布", "参数规模可能达 1 万亿", "开源协议可能调整", "与 Meta AI 助手深度整合"], tags: ["Meta", "Llama 4", "预期发布", "开源"], color: "#f59e0b" },
+      { id: 24, product: "华为盘古 4.0", company: "华为", date: "2026-07-01", status: "upcoming", category: "大模型", title: "华为盘古大模型 4.0", desc: "华为盘古 4.0 将于 WAIC 2026 期间发布，重点提升行业应用能力和端侧部署效率。", details: ["WAIC 2026 期间发布", "行业应用能力增强", "端侧部署效率优化", "与华为云生态深度整合"], tags: ["华为", "盘古", "大模型", "WAIC"], color: "#8b5cf6" }
+    ];
+    let currentStatus = 'all';
+    let currentCompany = 'all';
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let currentView = 'calendar';
+    let currentMonth = new Date(2026, 5, 1); // June 2026
+
+    function init() {
+      updateStats();
+      renderCountdown();
+      renderCompanies();
+      renderCategories();
+      renderContent();
+      bindEvents();
+      setInterval(renderCountdown, 60000);
+    }
+
+    function updateStats() {
+      document.getElementById('stat-total').textContent = releaseData.length;
+      const upcoming = releaseData.filter(e => e.status === 'upcoming' || (e.status === 'event' && new Date(e.date) > new Date())).length;
+      const released = releaseData.filter(e => e.status === 'released').length;
+      document.getElementById('stat-upcoming').textContent = upcoming;
+      document.getElementById('stat-released').textContent = released;
+    }
+
+    function renderCountdown() {
+      const upcoming = releaseData.filter(e => new Date(e.date) > new Date() && (e.status === 'upcoming' || e.status === 'event')).sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+      if (!upcoming) {
+        document.getElementById('countdownBar').innerHTML = '<p style="color:var(--text-muted)">暂无即将发布的产品</p>';
+        return;
+      }
+      const target = new Date(upcoming.date + 'T00:00:00');
+      const now = new Date();
+      const diff = target - now;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const html = `
+        <div class="countdown-item"><div class="countdown-value">${days}</div><div class="countdown-label">天</div></div>
+        <div class="countdown-item"><div class="countdown-value">${hours}</div><div class="countdown-label">时</div></div>
+        <div class="countdown-item"><div class="countdown-value">${mins}</div><div class="countdown-label">分</div></div>
+        <div class="countdown-item" style="min-width:200px"><div class="countdown-event">${upcoming.title}</div><div class="countdown-label">${upcoming.date}</div></div>
+      `;
+      document.getElementById('countdownBar').innerHTML = html;
+    }
+
+    function getFilteredData() {
+      return releaseData.filter(e => {
+        if (currentStatus !== 'all' && e.status !== currentStatus) return false;
+        if (currentCompany !== 'all' && e.company !== currentCompany) return false;
+        if (currentCategory !== 'all' && e.category !== currentCategory) return false;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          return e.title.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q) || e.product.toLowerCase().includes(q) || e.tags.some(t => t.toLowerCase().includes(q));
+        }
+        return true;
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    function renderCompanies() {
+      const counts = {};
+      releaseData.forEach(e => { counts[e.company] = (counts[e.company] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      let html = `<div class="company-item ${currentCompany==='all'?'active':''}" data-company="all">全部 <span class="company-count">${releaseData.length}</span></div>`;
+      sorted.forEach(([c, n]) => {
+        html += `<div class="company-item ${currentCompany===c?'active':''}" data-company="${c}">${c} <span class="company-count">${n}</span></div>`;
+      });
+      document.getElementById('companyList').innerHTML = html;
+    }
+
+    function renderCategories() {
+      const counts = {};
+      releaseData.forEach(e => { counts[e.category] = (counts[e.category] || 0) + 1; });
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      let html = `<div class="category-item ${currentCategory==='all'?'active':''}" data-category="all">全部 <span class="category-count">${releaseData.length}</span></div>`;
+      sorted.forEach(([c, n]) => {
+        html += `<div class="category-item ${currentCategory===c?'active':''}" data-category="${c}">${c} <span class="category-count">${n}</span></div>`;
+      });
+      document.getElementById('categoryList').innerHTML = html;
+    }
+
+    function renderContent() {
+      if (currentView === 'calendar') renderCalendar();
+      else if (currentView === 'timeline') renderTimeline();
+      else renderCards();
+    }
+
+    function renderCalendar() {
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+      const data = getFilteredData();
+      const dayMap = {};
+      data.forEach(e => {
+        const d = new Date(e.date).getDate();
+        const m = new Date(e.date).getMonth();
+        const y = new Date(e.date).getFullYear();
+        if (m === month && y === year) {
+          if (!dayMap[d]) dayMap[d] = [];
+          dayMap[d].push(e);
+        }
+      });
+      const weekDays = ['日','一','二','三','四','五','六'];
+      let html = '<div class="month-nav"><button class="month-nav-btn" id="prevMonth">◀</button><h2>' + year + '年' + (month+1) + '月</h2><button class="month-nav-btn" id="nextMonth">▶</button></div>';
+      html += '<div class="calendar-grid">';
+      weekDays.forEach(d => html += '<div class="calendar-header-cell">' + d + '</div>');
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        html += '<div class="calendar-cell other-month"><div class="day-number">' + day + '</div></div>';
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const events = dayMap[d] || [];
+        let eventsHtml = '';
+        events.forEach(e => {
+          eventsHtml += '<div class="day-event-label" style="background:' + e.color + '">' + e.product + '</div>';
+        });
+        html += '<div class="calendar-cell" data-day="' + d + '"><div class="day-number">' + d + '</div><div class="day-events">' + eventsHtml + '</div></div>';
+      }
+      const totalCells = firstDay + daysInMonth;
+      const remaining = 7 - (totalCells % 7);
+      if (remaining < 7) {
+        for (let d = 1; d <= remaining; d++) {
+          html += '<div class="calendar-cell other-month"><div class="day-number">' + d + '</div></div>';
+        }
+      }
+      html += '</div>';
+      document.getElementById('content').innerHTML = html;
+      document.getElementById('prevMonth').addEventListener('click', () => { currentMonth.setMonth(currentMonth.getMonth() - 1); renderContent(); });
+      document.getElementById('nextMonth').addEventListener('click', () => { currentMonth.setMonth(currentMonth.getMonth() + 1); renderContent(); });
+      document.querySelectorAll('.calendar-cell[data-day]').forEach(cell => {
+        cell.addEventListener('click', () => {
+          const day = parseInt(cell.dataset.day);
+          const events = dayMap[day];
+          if (events && events.length === 1) showModal(events[0]);
+          else if (events && events.length > 1) {
+            // Show first event for now
+            showModal(events[0]);
+          }
+        });
+      });
+    }
+
+    function renderTimeline() {
+      const data = getFilteredData();
+      if (data.length === 0) {
+        document.getElementById('content').innerHTML = '<div class="no-results"><h3>🔍 未找到结果</h3><p>尝试调整筛选条件或搜索词</p></div>';
+        return;
+      }
+      const html = '<div class="timeline">' + data.map(e => renderEntry(e)).join('') + '</div>';
+      document.getElementById('content').innerHTML = html;
+      document.querySelectorAll('.entry-card').forEach(card => {
+        card.addEventListener('click', () => { const id = parseInt(card.dataset.id); const item = releaseData.find(x => x.id === id); if (item) showModal(item); });
+      });
+    }
+
+    function renderCards() {
+      const data = getFilteredData();
+      if (data.length === 0) {
+        document.getElementById('content').innerHTML = '<div class="no-results"><h3>🔍 未找到结果</h3><p>尝试调整筛选条件或搜索词</p></div>';
+        return;
+      }
+      const html = '<div class="cards-grid">' + data.map(e => renderCard(e)).join('') + '</div>';
+      document.getElementById('content').innerHTML = html;
+      document.querySelectorAll('.card-item').forEach(card => {
+        card.addEventListener('click', () => { const id = parseInt(card.dataset.id); const item = releaseData.find(x => x.id === id); if (item) showModal(item); });
+      });
+    }
+
+    function renderEntry(e) {
+      return `<div class="entry"><div class="entry-dot ${e.status}"></div><div class="entry-card" data-id="${e.id}"><div class="entry-header"><div class="entry-meta"><span class="entry-product"><span class="product-icon">${e.company[0]}</span>${e.product}</span><span class="entry-status status-${e.status}">${statusLabel(e.status)}</span></div><span class="entry-date">${e.date}</span></div><div class="entry-title">${e.title}</div><div class="entry-desc">${e.desc}</div><div class="entry-tags">${e.tags.slice(0,4).map(t => '<span class="entry-tag">'+t+'</span>').join('')}</div></div></div>`;
+    }
+
+    function renderCard(e) {
+      return `<div class="card-item" data-id="${e.id}"><div class="entry-header"><div class="entry-meta"><span class="entry-product"><span class="product-icon">${e.company[0]}</span>${e.product}</span><span class="entry-date">${e.date}</span></div></div><span class="entry-status status-${e.status}">${statusLabel(e.status)}</span><div class="entry-title" style="margin-top:8px">${e.title}</div><div class="entry-desc">${e.desc}</div><div class="entry-tags">${e.tags.slice(0,3).map(t => '<span class="entry-tag">'+t+'</span>').join('')}</div></div>`;
+    }
+
+    function statusLabel(s) {
+      const labels = { 'released': '已发布', 'upcoming': '即将发布', 'expected': '预期发布', 'event': '大会/活动' };
+      return labels[s] || s;
+    }
+
+    function showModal(item) {
+      const modal = document.getElementById('modal');
+      const overlay = document.getElementById('modalOverlay');
+      const target = new Date(item.date + 'T00:00:00');
+      const now = new Date();
+      const diff = target - now;
+      let countdownHtml = '';
+      if (diff > 0) {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        countdownHtml = '<div class="modal-countdown"><div class="modal-countdown-item"><div class="modal-countdown-value">' + days + '</div><div class="modal-countdown-label">天</div></div><div class="modal-countdown-item"><div class="modal-countdown-value">' + hours + '</div><div class="modal-countdown-label">时</div></div><div class="modal-countdown-item"><div class="modal-countdown-value">' + mins + '</div><div class="modal-countdown-label">分</div></div></div>';
+      }
+      modal.innerHTML = '<div class="modal-header"><div class="modal-title">' + item.title + '</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-meta"><span class="entry-status status-' + item.status + '">' + statusLabel(item.status) + '</span><span class="entry-date">' + item.date + (item.endDate ? ' ~ ' + item.endDate : '') + '</span></div><div class="entry-desc">' + item.desc + '</div><ul class="modal-detail-list">' + item.details.map(d => '<li>' + d + '</li>').join('') + '</ul>' + countdownHtml;
+      overlay.classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+
+    function bindEvents() {
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        if (searchQuery) { currentCompany = 'all'; currentCategory = 'all'; renderCompanies(); renderCategories(); }
+        renderContent();
+      });
+      document.querySelectorAll('#statusFilters .filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#statusFilters .filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentStatus = btn.dataset.status;
+          renderContent();
+        });
+      });
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentView = btn.dataset.view;
+          renderContent();
+        });
+      });
+      document.getElementById('companyList').addEventListener('click', (e) => {
+        const item = e.target.closest('.company-item');
+        if (!item) return;
+        currentCompany = item.dataset.company;
+        renderCompanies();
+        renderContent();
+      });
+      document.getElementById('categoryList').addEventListener('click', (e) => {
+        const item = e.target.closest('.category-item');
+        if (!item) return;
+        currentCategory = item.dataset.category;
+        renderCategories();
+        renderContent();
+      });
+      document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modalOverlay')) closeModal();
+      });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    }
+
+    init();
+  </script>
+</body>
+</html>
